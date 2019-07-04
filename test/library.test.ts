@@ -1,5 +1,5 @@
 
-import { MQTTSubject } from '../src/library2'
+import { MQTTSubject } from '../src/library'
 import { Subject } from 'rxjs'
 import { AssertionError } from 'assert';
 

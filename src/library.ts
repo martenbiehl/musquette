@@ -1,5 +1,13 @@
 import { Subject, AnonymousSubject } from 'rxjs/internal/Subject'
-import { Subscriber, Observable, Subscription, Operator, ReplaySubject, Observer, NextObserver } from 'rxjs';
+import {
+  Subscriber,
+  Observable,
+  Subscription,
+  Operator,
+  ReplaySubject,
+  Observer,
+  NextObserver
+} from 'rxjs'
 import { filter } from 'rxjs/operators'
 
 import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect } from 'mqtt'
@@ -96,81 +104,83 @@ import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect 
 
 export interface MQTTSubjectConfig<T> {
   /** The url of the MQTT server to connect to */
-  url: string;
+  url: string
   /** The protocol to use to connect */
-  options?: MQTTClientOptions;
+  options?: MQTTClientOptions
   /**
    * A serializer used to create messages from passed values before the
    * messages are sent to the server. Defaults to JSON.stringify.
    */
-  serializer?: (value: T) => MQTTMessage;
+  serializer?: (value: T) => MQTTMessage
   /**
    * A deserializer used for messages arriving on the socket from the
    * server. Defaults to JSON.parse.
    */
-  deserializer?: (e: MessageEvent) => T;
+  deserializer?: (e: MessageEvent) => T
   /**
    * An Observer that watches when open events occur on the underlying connection
    */
-  connectObserver?: NextObserver<Event>;
+  connectObserver?: NextObserver<Event>
   /**
    * An Observer than watches when close events occur on the underlying connection
    */
-  disconnectObserver?: NextObserver<CloseEvent>;
+  disconnectObserver?: NextObserver<CloseEvent>
   /**
    * An Observer that watches when a close is about to occur due to
    * unsubscription.
    */
-  disconnectingObserver?: NextObserver<void>;
+  disconnectingObserver?: NextObserver<void>
 }
 
 const DEFAULT_MQTT_CONFIG: MQTTSubjectConfig<any> = {
   url: '',
   deserializer: (e: MessageEvent) => JSON.parse(e),
-  serializer: (value: any) => JSON.stringify(value),
-};
+  serializer: (value: any) => JSON.stringify(value)
+}
 
 const WEBSOCKETSUBJECT_INVALID_ERROR_OBJECT =
-  'WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }';
+  'WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }'
 
-export type MQTTMessage = string | ArrayBuffer | Blob | ArrayBufferView;
+export type MQTTMessage = string | ArrayBuffer | Blob | ArrayBufferView
 
 export class MQTTSubject<T> extends AnonymousSubject<T> {
-
-  private _config: MQTTSubjectConfig<T>;
+  private _config: MQTTSubjectConfig<T>
 
   /** @deprecated This is an internal implementation detail, do not use. */
-  _output: Subject<T>;
+  _output: Subject<T>
 
-  private _connection: MQTTClient;
+  private _connection: MQTTClient
 
-  constructor(urlConfigOrSource: string | MQTTSubjectConfig<T> | Observable<T>, destination?: Observer<T>) {
-    super();
+  constructor(
+    urlConfigOrSource: string | MQTTSubjectConfig<T> | Observable<T>,
+    destination?: Observer<T>
+  ) {
+    super()
     if (urlConfigOrSource instanceof Observable) {
-      this.destination = destination;
-      this.source = urlConfigOrSource as Observable<T>;
+      this.destination = destination
+      this.source = urlConfigOrSource as Observable<T>
     } else {
-      const config = this._config = { ...DEFAULT_MQTT_CONFIG };
-      this._output = new Subject<T>();
+      const config = (this._config = { ...DEFAULT_MQTT_CONFIG })
+      this._output = new Subject<T>()
       if (typeof urlConfigOrSource === 'string') {
-        config.url = urlConfigOrSource;
+        config.url = urlConfigOrSource
       } else {
         for (let key in urlConfigOrSource) {
           if (urlConfigOrSource.hasOwnProperty(key)) {
-            config[key] = urlConfigOrSource[key];
+            config[key] = urlConfigOrSource[key]
           }
         }
       }
 
-      this.destination = new ReplaySubject();
+      this.destination = new ReplaySubject()
     }
   }
 
   lift<R>(operator: Operator<T, R>): MQTTSubject<R> {
-    const sock = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any> this.destination);
-    sock.operator = operator;
-    sock.source = this;
-    return sock;
+    const sock = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any>this.destination)
+    sock.operator = operator
+    sock.source = this
+    return sock
   }
 
   private _resetState() {
@@ -178,9 +188,9 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     this._connection.end()
     // this._connection = null;
     if (!this.source) {
-      this.destination = new ReplaySubject();
+      this.destination = new ReplaySubject()
     }
-    this._output = new Subject<T>();
+    this._output = new Subject<T>()
   }
 
   topic(topic: string) {
@@ -239,18 +249,21 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
   // }
 
   private _connectBroker() {
-    const { url, options } = this._config;
-    const observer = this._output;
+    const { url, options } = this._config
+    const observer = this._output
 
-    let connection: MQTTClient | null = null;
+    let connection: MQTTClient | null = null
     try {
-      connection = options ?
-        connect(url, options) :
-        connect(url);
-      this._connection = connection;
+      connection = options
+        ? connect(
+            url,
+            options
+          )
+        : connect(url)
+      this._connection = connection
     } catch (e) {
-      observer.error(e);
-      return;
+      observer.error(e)
+      return
     }
 
     // TODO: Review if this.reset is sufficient
@@ -259,55 +272,57 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       if (connection && connection.connected) {
         connection.end()
       }
-    });
+    })
 
-    connection.on('connect', (e) => {
-      const { connectObserver } = this._config;
+    connection.on('connect', e => {
+      const { connectObserver } = this._config
       if (connectObserver) {
-        connectObserver.next(e);
+        connectObserver.next(e)
       }
-      const queue = this.destination;
+      const queue = this.destination
 
       this.destination = Subscriber.create<T>(
-        ({topic,message}) => {
+        ({ topic, message }) => {
           if (connection.connected) {
-              const { serializer } = this._config;
-              connection.publish(topic, serializer(message), undefined, (e: Error) => this.destination.error(e));
+            const { serializer } = this._config
+            connection.publish(topic, serializer(message), undefined, (e: Error) =>
+              this.destination.error(e)
+            )
           }
         },
-        (e) => {
-          const { disconnectingObserver } = this._config;
+        e => {
+          const { disconnectingObserver } = this._config
           if (disconnectingObserver) {
-            disconnectingObserver.next(undefined);
+            disconnectingObserver.next(undefined)
           }
-          this._resetState();
+          this._resetState()
         },
         () => {
-          const { disconnectingObserver } = this._config;
+          const { disconnectingObserver } = this._config
           if (disconnectingObserver) {
-            disconnectingObserver.next(undefined);
+            disconnectingObserver.next(undefined)
           }
           connection.end()
-          this._resetState();
+          this._resetState()
         }
-      ) as Subscriber<any>;
+      ) as Subscriber<any>
 
       if (queue && queue instanceof ReplaySubject) {
-        subscription.add((<ReplaySubject<T>>queue).subscribe(this.destination));
+        subscription.add((<ReplaySubject<T>>queue).subscribe(this.destination))
       }
     })
 
-    connection.on('error', (e) => {
+    connection.on('error', e => {
       this._resetState()
       observer.error(e)
     })
 
-    connection.stream.on('error', (e) => {
+    connection.stream.on('error', e => {
       this._resetState()
       observer.error(e)
     })
 
-    connection.on('end', (e) => {
+    connection.on('end', e => {
       this._resetState()
       const { disconnectObserver } = this._config
       if (disconnectObserver) {
@@ -337,33 +352,33 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
 
   /** @deprecated This is an internal implementation detail, do not use. */
   _subscribe(subscriber: Subscriber<T>): Subscription {
-    const { source } = this;
+    const { source } = this
     if (source) {
-      return source.subscribe(subscriber);
+      return source.subscribe(subscriber)
     }
     if (!this._connection) {
-      this._connectBroker();
+      this._connectBroker()
     }
-    this._output.subscribe(subscriber);
+    this._output.subscribe(subscriber)
     subscriber.add(() => {
-      const { _connection } = this;
+      const { _connection } = this
       if (this._output.observers.length === 0) {
         if (_connection && _connection.connected) {
-          _connection.end();
+          _connection.end()
         }
-        this._resetState();
+        this._resetState()
       }
-    });
-    return subscriber;
+    })
+    return subscriber
   }
 
   unsubscribe() {
-    const { _connection } = this;
+    const { _connection } = this
     if (_connection && _connection.connected) {
-      _connection.end();
+      _connection.end()
     }
-    this._resetState();
-    super.unsubscribe();
+    this._resetState()
+    super.unsubscribe()
   }
 }
 
@@ -374,14 +389,11 @@ export class MQTTTopicSubject<T> extends AnonymousSubject<T> {
 
   _subscribe(subscriber) {
     //FIXME: Actual subscribe should be executed here
-    const { source } = this;
+    const { source } = this
     if (source) {
-      return this.source
-        .pipe(filter((packet) => packet.topic === this._topic))
-        .subscribe(subscriber);
-    }
-    else {
-        return Subscription.EMPTY;
+      return this.source.pipe(filter(packet => packet.topic === this._topic)).subscribe(subscriber)
+    } else {
+      return Subscription.EMPTY
     }
   }
 }
