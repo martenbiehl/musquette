@@ -1,12 +1,13 @@
 
 import { MQTTSubject } from '../src/library'
 import { Subject } from 'rxjs'
-import { AssertionError } from 'assert';
 
 const mosca = require('mosca')
 
 let port = 1883
 const noop = () => { }
+
+// TODO: await broker ready
 function startBroker(serverReady = noop, clientConnected = (client) => { }, published = (packet, client) => { }) {
   port = port + 1
   var server = new mosca.Server({port});
@@ -46,14 +47,14 @@ describe('Connect', async () => {
     let connectObserver = new Subject()
     connectObserver.subscribe({
       next: (event) => {
-        expect(event).toBeTruthy()
+        expect(event).toHaveProperty('cmd', 'connack')
         done()
       }
     })
     new MQTTSubject({ url: `mqtt://localhost:${port}`, connectObserver }).subscribe()
   })
 
-  it('supplied disconnectingObserver is notified when observable is completeddisconnect', (done) => {
+  it('supplied disconnectingObserver is notified when observable is completed', (done) => {
     expect.assertions(1)
     let disconnectingObserver = new Subject<void>()
     disconnectingObserver.subscribe({
@@ -81,7 +82,7 @@ describe('Connect', async () => {
     connection.subscribe()
     connection.unsubscribe()
   })
-])
+})
 
 describe('publishing', () => {
 
