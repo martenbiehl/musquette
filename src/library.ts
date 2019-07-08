@@ -12,14 +12,11 @@ import { filter } from 'rxjs/operators'
 
 import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect } from 'mqtt'
 
-interface MQTTOutgoingMessage {
-  topic: string
-  payload: MQTTMessage
-}
-
-interface MQTTIncomingMessage {
-  topic: string
-  message: MQTTMessage
+interface MQTTMessage<T> {
+  topic: string,
+  message: T,
+  qos?: 0 | 1 | 2,
+  retain?: boolean
 }
 
 export interface MQTTSubjectConfig<T> {
@@ -31,7 +28,7 @@ export interface MQTTSubjectConfig<T> {
    * A serializer used to create messages from passed values before the
    * messages are sent to the server. Defaults to JSON.stringify.
    */
-  serializer?: (value: T) => MQTTMessage
+  serializer?: (value: T) => Buffer
   /**
    * A deserializer used for messages arriving on the socket from the
    * server. Defaults to JSON.parse.
@@ -57,13 +54,11 @@ export interface MQTTSubjectConfig<T> {
 const DEFAULT_MQTT_CONFIG: MQTTSubjectConfig<any> = {
   url: '',
   deserializer: (message: Buffer) => JSON.parse(message.toString()),
-  serializer: (value: any) => JSON.stringify(value)
+  serializer: (value: any) => Buffer.from(JSON.stringify(value))
 }
 
 const WEBSOCKETSUBJECT_INVALID_ERROR_OBJECT =
   'WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }'
-
-export type MQTTMessage = string | ArrayBuffer | Blob | ArrayBufferView
 
 export class MQTTSubject<T> extends AnonymousSubject<T> {
   private _config: MQTTSubjectConfig<T>
@@ -121,6 +116,10 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     const { url, options } = this._config
     const observer = this._output
 
+    if (!observer) {
+      throw new Error('Output observer not initialized')
+    }
+
     let connection: MQTTClient | null = null
     try {
       connection = options
@@ -150,13 +149,21 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       }
       const queue = this.destination
 
-      this.destination = Subscriber.create<T>(
-        ({ topic, message }) => {
-          if (connection.connected) {
+      this.destination = Subscriber.create<MQTTMessage<T>>(
+        (command) => {
+          if (!command)
+            return
+
+          const { topic, message, qos = 0, retain } = command
+          if (connection && connection.connected) {
             const { serializer } = this._config
-            connection.publish(topic, serializer(message), undefined, (e: Error) =>
-              this.destination.error(e)
-            )
+            if (connection) {
+              connection.publish(topic, serializer(message), { qos, retain }, (error: Error) => {
+                if (error && this.destination)
+                  this.destination.error(e)
+              }
+              )
+            }
           }
         },
         e => {
@@ -171,7 +178,9 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
           if (disconnectingObserver) {
             disconnectingObserver.next(undefined)
           }
-          connection.end()
+          if (connection) {
+            connection.end()
+          }
           this._resetState()
         }
       ) as Subscriber<any>
@@ -228,10 +237,12 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     if (!this._connection) {
       this._connectBroker()
     }
-    this._output.subscribe(subscriber)
+    if (this._output) {
+      this._output.subscribe(subscriber)
+    }
     subscriber.add(() => {
       const { _connection } = this
-      if (this._output.observers.length === 0) {
+      if (this._output && this._output.observers.length === 0) {
         if (_connection && _connection.connected) {
           _connection.end()
         }
@@ -256,7 +267,7 @@ export class MQTTTopicSubject<T> extends AnonymousSubject<T> {
     super(source, source)
   }
 
-  _subscribe(subscriber) {
+  _subscribe(subscriber: Subscriber<T>) {
     //FIXME: Actual subscribe should be executed here
     const { source } = this
     if (source) {
