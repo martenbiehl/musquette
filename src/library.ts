@@ -13,9 +13,9 @@ import { filter } from 'rxjs/operators'
 import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect } from 'mqtt'
 
 interface MQTTMessage<T> {
-  topic: string,
-  message: T,
-  qos?: 0 | 1 | 2,
+  topic: string
+  message: T
+  qos?: 0 | 1 | 2
   retain?: boolean
 }
 
@@ -150,19 +150,16 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       const queue = this.destination
 
       this.destination = Subscriber.create<MQTTMessage<T>>(
-        (command) => {
-          if (!command)
-            return
+        command => {
+          if (!command) return
 
           const { topic, message, qos = 0, retain } = command
           if (connection && connection.connected) {
             const { serializer } = this._config
             if (connection) {
               connection.publish(topic, serializer(message), { qos, retain }, (error: Error) => {
-                if (error && this.destination)
-                  this.destination.error(e)
-              }
-              )
+                if (error && this.destination) this.destination.error(e)
+              })
             }
           }
         },
