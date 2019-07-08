@@ -12,6 +12,15 @@ import { filter } from 'rxjs/operators'
 
 import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect } from 'mqtt'
 
+interface MQTTOutgoingMessage {
+  topic: string,
+  payload: MQTTMessage
+}
+
+interface MQTTIncomingMessage {
+  topic: string,
+  message: MQTTMessage
+}
 
 export interface MQTTSubjectConfig<T> {
   /** The url of the MQTT server to connect to */
@@ -27,7 +36,7 @@ export interface MQTTSubjectConfig<T> {
    * A deserializer used for messages arriving on the socket from the
    * server. Defaults to JSON.parse.
    */
-  deserializer?: (e: MessageEvent) => T
+  deserializer?: (message: Buffer) => T
   /**
    * An Observer that watches when open events occur on the underlying connection
    */
@@ -41,11 +50,13 @@ export interface MQTTSubjectConfig<T> {
    * unsubscription.
    */
   disconnectingObserver?: NextObserver<void>
+
+  [key: string]: any
 }
 
 const DEFAULT_MQTT_CONFIG: MQTTSubjectConfig<any> = {
   url: '',
-  deserializer: (e: MessageEvent) => JSON.parse(e),
+  deserializer: (message: Buffer) => JSON.parse(message.toString()),
   serializer: (value: any) => JSON.stringify(value)
 }
 
@@ -104,7 +115,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     this._output = new Subject<T>()
   }
 
-  topic(topic: string) {
+  topic(topic: string): MQTTTopicSubject<T> {
     this._connection.subscribe(topic)
     return new MQTTTopicSubject(this, topic)
   }
