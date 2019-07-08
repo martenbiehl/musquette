@@ -11,6 +11,7 @@ import {
 import { filter } from 'rxjs/operators'
 
 import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect } from 'mqtt'
+import mqttWildcard from './mqtt-wildcard'
 
 interface MQTTMessage<T> {
   topic: string
@@ -268,7 +269,9 @@ export class MQTTTopicSubject<T> extends AnonymousSubject<T> {
     //FIXME: Actual subscribe should be executed here
     const { source } = this
     if (source) {
-      return this.source.pipe(filter(packet => packet.topic === this._topic)).subscribe(subscriber)
+      return this.source
+        .pipe(filter(packet => typeof mqttWildcard(packet.topic, this._topic) !== 'undefined'))
+        .subscribe(subscriber)
     } else {
       return Subscription.EMPTY
     }
