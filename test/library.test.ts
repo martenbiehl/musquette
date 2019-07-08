@@ -158,4 +158,46 @@ describe('topic', () => {
 
 })
 
+describe('wildcards', () => {
+  it('listen to data published on a # wildcard topic', done => {
+    expect.assertions(2)
+    const [port, broker] = startBroker(() => {
+      let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+      // FIXME: Tis will probably not work, we need to be able to publish on a topic without subscription
+      connection.subscribe()
+      let topic = connection.topic('topic/#')
+      topic.subscribe(({ topic, message }) => {
+        expect(topic).toBe('topic/topic')
+        expect(message).toBe('message')
+        broker.close
+        done()
+      })
+
+      connection.next({
+        topic: 'topic/topic',
+        message: 'message'
+      })
+
+      // broker.publish({
+      //   topic: 'topic',
+      //   payload: JSON.stringify('message'),
+      //   qos: 0,
+      //   retain: false
+      // })
+    }, noop, noop)
+  })
+
+  it('listen to data published on a + wildcard topic', () => {
+    expect(false).toBeTruthy()
+  })
+
+  it('publishing data on a wildcard topic throws an error', () => {
+    expect(false).toBeTruthy()
+  })
+
+  it('publishing data as MQTTMessage type on a wildcard topic works', () => {
+    expect(false).toBeTruthy()
+  })
+})
+
 
