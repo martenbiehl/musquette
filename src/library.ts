@@ -13,12 +13,12 @@ import { filter } from 'rxjs/operators'
 import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect } from 'mqtt'
 
 interface MQTTOutgoingMessage {
-  topic: string,
+  topic: string
   payload: MQTTMessage
 }
 
 interface MQTTIncomingMessage {
-  topic: string,
+  topic: string
   message: MQTTMessage
 }
 
@@ -69,45 +69,40 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
   private _config: MQTTSubjectConfig<T>
 
   /** @deprecated This is an internal implementation detail, do not use. */
-  _output: Subject<T>
+  private _output?: Subject<T> = new Subject<T>()
 
-  private _connection: MQTTClient
+  private _connection?: MQTTClient
 
-  constructor(
-    urlConfigOrSource: string | MQTTSubjectConfig<T> | Observable<T>,
-    destination?: Observer<T>
-  ) {
+  constructor(urlOrConfig: string | MQTTSubjectConfig<T>, destination?: Observer<T>) {
     super()
-    if (urlConfigOrSource instanceof Observable) {
-      this.destination = destination
-      this.source = urlConfigOrSource as Observable<T>
+    const config = (this._config = { ...DEFAULT_MQTT_CONFIG })
+    if (typeof urlOrConfig === 'string') {
+      config.url = urlOrConfig
     } else {
-      const config = (this._config = { ...DEFAULT_MQTT_CONFIG })
-      this._output = new Subject<T>()
-      if (typeof urlConfigOrSource === 'string') {
-        config.url = urlConfigOrSource
-      } else {
-        for (let key in urlConfigOrSource) {
-          if (urlConfigOrSource.hasOwnProperty(key)) {
-            config[key] = urlConfigOrSource[key]
-          }
+      for (let key in urlOrConfig) {
+        if (urlOrConfig.hasOwnProperty(key)) {
+          config[key] = urlOrConfig[key]
         }
       }
-
-      this.destination = new ReplaySubject()
     }
+
+    this.destination = destination || new ReplaySubject()
   }
 
   lift<R>(operator: Operator<T, R>): MQTTSubject<R> {
-    const sock = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any>this.destination)
-    sock.operator = operator
-    sock.source = this
-    return sock
+    const connection = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any>(
+      this.destination
+    ))
+    connection.operator = operator
+    connection.source = this
+    return connection
   }
 
   private _resetState() {
     // FIX: resetting connection
-    this._connection.end()
+    if (this._connection) {
+      this._connection.end()
+    }
     // this._connection = null;
     if (!this.source) {
       this.destination = new ReplaySubject()
@@ -116,7 +111,9 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
   }
 
   topic(topic: string): MQTTTopicSubject<T> {
-    this._connection.subscribe(topic)
+    if (this._connection) {
+      this._connection.subscribe(topic)
+    }
     return new MQTTTopicSubject(this, topic)
   }
 
