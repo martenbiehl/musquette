@@ -119,19 +119,12 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     const { url, options } = this._config
     const observer = this._output
 
-    let connection: MQTTClient | null = null
-    try {
-      connection = options
-        ? connect(
-            url,
-            options
-          )
-        : connect(url)
-      this._connection = connection
-    } catch (e) {
-      observer.error(e)
-      return
-    }
+    let connection = (this._connection = options
+      ? connect(
+          url,
+          options
+        )
+      : connect(url))
 
     connection.on('connect', e => {
       const { connectObserver } = this._config
@@ -174,9 +167,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
           if (disconnectingObserver) {
             disconnectingObserver.next(undefined)
           }
-          if (connection) {
-            connection.end()
-          }
+          connection.end()
           this._resetState()
         }
       ) as Subscriber<any>
