@@ -102,7 +102,6 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     if (this._connection) {
       this._connection.end()
     }
-    // this._connection = null;
     if (!this.source) {
       this.destination = new ReplaySubject()
     }
@@ -216,11 +215,6 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
         disconnectObserver.next(e)
       }
       observer.complete()
-      // if (e.wasClean) {
-      //   observer.complete();
-      // } else {
-      //   observer.error(e);
-      // }
     })
     connection.on('message', (topic, messageBuffer) => {
       // TODO: Serialize/deserialize per topic
