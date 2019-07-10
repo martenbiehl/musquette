@@ -255,7 +255,8 @@ describe('wildcards', () => {
         topic.subscribe(({ topic, message }) => {
           expect(topic).toBe('topic/topic')
           expect(message).toBe('message')
-          broker.close
+          connection.unsubscribe()
+          broker.close()
           done()
         })
 
@@ -286,7 +287,8 @@ describe('wildcards', () => {
         topic.subscribe(({ topic, message }) => {
           expect(topic).toBe('topic/topic/topic')
           expect(message).toBe('message')
-          broker.close
+          connection.unsubscribe()
+          broker.close()
           done()
         })
 
