@@ -250,12 +250,11 @@ describe('wildcards', () => {
     const [port, broker] = startBroker(
       () => {
         let connection = new MQTTSubject(`mqtt://localhost:${port}`)
-        connection.subscribe()
         let topic = connection.topic('topic/#')
-        topic.subscribe(({ topic, message }) => {
+        let subscription = topic.subscribe(({ topic, message }) => {
           expect(topic).toBe('topic/topic')
           expect(message).toBe('message')
-          connection.unsubscribe()
+          subscription.unsubscribe()
           broker.close()
           done()
         })
@@ -282,12 +281,11 @@ describe('wildcards', () => {
     const [port, broker] = startBroker(
       () => {
         let connection = new MQTTSubject(`mqtt://localhost:${port}`)
-        connection.subscribe()
         let topic = connection.topic('topic/+/topic')
-        topic.subscribe(({ topic, message }) => {
+        let subscription = topic.subscribe(({ topic, message }) => {
           expect(topic).toBe('topic/topic/topic')
           expect(message).toBe('message')
-          connection.unsubscribe()
+          subscription.unsubscribe()
           broker.close()
           done()
         })
