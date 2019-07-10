@@ -3,14 +3,15 @@ import { Subject } from 'rxjs'
 
 const mosca = require('mosca')
 
-let port = 1883
+let port = 1884
 const noop = () => {}
 
 // TODO: await broker ready
 function startBroker(
   serverReady = noop,
   clientConnected = client => {},
-  published = (packet, client) => {}
+  published = (packet, client) => {},
+  failed = () => {}
 ) {
   port = port + 1
   var server = new mosca.Server({ port })
@@ -20,6 +21,11 @@ function startBroker(
   server.on('published', published)
 
   server.on('ready', serverReady)
+
+  setTimeout(() => {
+    server.close()
+    failed()
+  }, 6000)
 
   return [port, server]
 }
@@ -87,7 +93,7 @@ describe('Connect', async () => {
 })
 
 describe('publishing', () => {
-  it('publish message on topic', done => {
+  it('publish message as MQTTMessage', done => {
     const [port, broker] = startBroker(noop, noop, packet => {
       if (packet.topic !== 'topic') return
       let message = JSON.parse(packet.payload.toString())
@@ -99,6 +105,38 @@ describe('publishing', () => {
     let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
     connection.subscribe()
     connection.next({ topic: 'topic', message: 'message' })
+  })
+
+  it('publish message as MQTTMessage without subscribing first', done => {
+    const [port, broker] = startBroker(noop, noop, packet => {
+      if (packet.topic !== 'topic') return
+      let message = JSON.parse(packet.payload.toString())
+      expect(message).toEqual('message')
+      done()
+    })
+    expect.assertions(1)
+
+    let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
+    connection.next({ topic: 'topic', message: 'message' })
+  })
+
+  it('publish message with arguments syntax', done => {
+    const [port, broker] = startBroker(
+      noop,
+      noop,
+      packet => {
+        if (packet.topic !== 'topic') return
+        let message = JSON.parse(packet.payload.toString())
+        expect(message).toEqual('message')
+        done()
+      },
+      done
+    )
+    expect.assertions(1)
+
+    let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
+    connection.subscribe()
+    connection.publish('topic', 'message')
   })
 })
 
@@ -113,7 +151,7 @@ describe('topic', () => {
         topic.subscribe(({ topic, message }) => {
           expect(topic).toBe('topic')
           expect(message).toBe('message')
-          broker.close
+          broker.close()
           done()
         })
 
@@ -146,6 +184,28 @@ describe('topic', () => {
           topic: 'topic',
           message: 'message'
         })
+      },
+      noop,
+      ({ topic, payload }) => {
+        if (topic === 'topic') {
+          const message = JSON.parse(payload.toString())
+          expect(message).toBe('message')
+          broker.close()
+          done()
+        }
+      }
+    )
+  })
+
+  it('publish data on the topic with arguments', done => {
+    expect.assertions(1)
+    const [port, broker] = startBroker(
+      () => {
+        let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+        connection.subscribe()
+        let topic = connection.topic('topic')
+
+        topic.publish('message')
       },
       noop,
       ({ topic, payload }) => {
@@ -247,11 +307,49 @@ describe('wildcards', () => {
     )
   })
 
-  it('publishing data on a wildcard topic throws an error', () => {
-    expect(false).toBeTruthy()
+  it('publishing payload data on wildcard topic throws an error with publish method', done => {
+    expect.assertions(1)
+    const [port, broker] = startBroker(
+      () => {
+        try {
+          let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+          connection.subscribe()
+          let topic = connection.topic('topic/#')
+
+          topic.publish('message')
+        } catch (err) {
+          expect(err.message).toContain('INVALIDTOPIC')
+          done()
+        }
+      },
+      noop,
+      noop,
+      done
+    )
   })
 
-  it('publishing data as MQTTMessage type on a wildcard topic works', () => {
+  it('publishing payload data on wildcard topic throws an error with next', done => {
+    expect.assertions(1)
+    const [port, broker] = startBroker(
+      () => {
+        try {
+          let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+          connection.subscribe()
+          let topic = connection.topic('topic/#')
+
+          topic.next('message')
+        } catch (err) {
+          expect(err.message).toContain('INVALIDTOPIC')
+          done()
+        }
+      },
+      noop,
+      noop,
+      done
+    )
+  })
+
+  it('publishing data as MQTTMessage type on a wildcard topic works, aka specifying a topic to publish on', () => {
     expect(false).toBeTruthy()
   })
 })

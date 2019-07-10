@@ -86,6 +86,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
   }
 
   lift<R>(operator: Operator<T, R>): MQTTSubject<R> {
+    // TODO: Fix all the <any> here
     const connection = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any>(
       this.destination
     ))
@@ -226,6 +227,13 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     })
   }
 
+  publish(topic: string, message: T) {
+    this.destination.next({
+      topic,
+      message
+    })
+  }
+
   /** @deprecated This is an internal implementation detail, do not use. */
   _subscribe(subscriber: Subscriber<T>): Subscription {
     const { source } = this
@@ -260,9 +268,18 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
   }
 }
 
+const isWildcardTopic = (topic: string) => topic.includes('#') || topic.includes('+')
 export class MQTTTopicSubject<T> extends AnonymousSubject<T> {
   constructor(source: MQTTSubject<T>, private _topic: string) {
     super(source, source)
+  }
+
+  publish(message: T) {
+    if (isWildcardTopic(this._topic)) {
+      throw new Error('INVALIDTOPIC: Cannot publish on wildcard topic')
+    }
+    let observer: MQTTSubject<T> = this.source
+    observer.next({ topic: this._topic, message })
   }
 
   _subscribe(subscriber: Subscriber<T>) {
