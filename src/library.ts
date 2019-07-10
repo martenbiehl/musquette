@@ -65,7 +65,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
   private _config: MQTTSubjectConfig<T>
 
   /** @deprecated This is an internal implementation detail, do not use. */
-  private _output?: Subject<T> = new Subject<T>()
+  private _output: Subject<T> = new Subject<T>()
 
   private _connection?: MQTTClient
 
@@ -119,10 +119,6 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     const { url, options } = this._config
     const observer = this._output
 
-    if (!observer) {
-      throw new Error('Output observer not initialized')
-    }
-
     let connection: MQTTClient | null = null
     try {
       connection = options
@@ -136,14 +132,6 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       observer.error(e)
       return
     }
-
-    // TODO: Review if this.reset is sufficient
-    const subscription = new Subscription(() => {
-      // this._connection = null;
-      if (connection && connection.connected) {
-        connection.end()
-      }
-    })
 
     connection.on('connect', e => {
       const { connectObserver } = this._config
@@ -194,7 +182,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       ) as Subscriber<any>
 
       if (queue && queue instanceof ReplaySubject) {
-        subscription.add((<ReplaySubject<T>>queue).subscribe(this.destination))
+        ;(<ReplaySubject<T>>queue).subscribe(this.destination)
       }
     })
 
