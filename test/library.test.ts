@@ -88,7 +88,7 @@ describe('Connect', async () => {
     })
     let connection = new MQTTSubject({ url: `mqtt://localhost:${port}`, disconnectObserver })
     connection.subscribe()
-    connection.unsubscribe()
+    connection.complete()
   })
 })
 

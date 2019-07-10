@@ -83,6 +83,8 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     }
 
     this.destination = destination || new ReplaySubject()
+
+    this._connectBroker()
   }
 
   lift<R>(operator: Operator<T, R>): MQTTSubject<R> {
@@ -248,31 +250,10 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     if (source) {
       return source.subscribe(subscriber)
     }
-    if (!this._connection) {
-      this._connectBroker()
-    }
     if (this._output) {
       this._output.subscribe(subscriber)
     }
-    subscriber.add(() => {
-      const { _connection } = this
-      if (this._output && this._output.observers.length === 0) {
-        if (_connection && _connection.connected) {
-          _connection.end()
-        }
-        this._resetState()
-      }
-    })
     return subscriber
-  }
-
-  unsubscribe() {
-    const { _connection } = this
-    if (_connection && _connection.connected) {
-      _connection.end()
-    }
-    this._resetState()
-    super.unsubscribe()
   }
 }
 
