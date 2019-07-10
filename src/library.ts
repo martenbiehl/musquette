@@ -153,9 +153,17 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
 
       this.destination = Subscriber.create<MQTTMessage<T>>(
         command => {
-          if (!command) return
+          if (typeof command !== 'object') {
+            observer.error(
+              new Error(
+                'ERR_INVALID_ARG_TYPE: Expected MQTTMessage with at least properties topic and message'
+              )
+            )
+            return
+          }
 
           const { topic, message, qos = 0, retain } = command
+
           if (connection && connection.connected) {
             const { serializer } = this._config
             if (connection) {

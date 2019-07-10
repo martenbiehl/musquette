@@ -307,7 +307,7 @@ describe('wildcards', () => {
     )
   })
 
-  it('publishing payload data on wildcard topic throws an error with publish method', done => {
+  it('publishing on wildcard topic throws an error with publish method', done => {
     expect.assertions(1)
     const [port, broker] = startBroker(
       () => {
@@ -318,6 +318,7 @@ describe('wildcards', () => {
 
           topic.publish('message')
         } catch (err) {
+          // TODO: Standardize error types
           expect(err.message).toContain('INVALIDTOPIC')
           done()
         }
@@ -328,20 +329,20 @@ describe('wildcards', () => {
     )
   })
 
-  it('publishing payload data on wildcard topic throws an error with next', done => {
+  it('publishing on wildcard topic throws an error with next', done => {
     expect.assertions(1)
     const [port, broker] = startBroker(
       () => {
-        try {
-          let connection = new MQTTSubject(`mqtt://localhost:${port}`)
-          connection.subscribe()
-          let topic = connection.topic('topic/#')
+        let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+        connection.subscribe({
+          error: err => {
+            expect(err.message).toContain('ERR_INVALID_ARG_TYPE')
+            done()
+          }
+        })
+        let topic = connection.topic('topic/#')
 
-          topic.next('message')
-        } catch (err) {
-          expect(err.message).toContain('INVALIDTOPIC')
-          done()
-        }
+        topic.next('message')
       },
       noop,
       noop,
@@ -349,7 +350,28 @@ describe('wildcards', () => {
     )
   })
 
-  it('publishing data as MQTTMessage type on a wildcard topic works, aka specifying a topic to publish on', () => {
-    expect(false).toBeTruthy()
+  it('publishing data as MQTTMessage type on a wildcard topic works, aka specifying a topic to publish on', done => {
+    expect.assertions(1)
+    const [port, broker] = startBroker(
+      () => {
+        let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+        connection.subscribe()
+        let topic = connection.topic('topic/#')
+
+        topic.next({
+          topic: 'topic',
+          message: 'message'
+        })
+      },
+      noop,
+      ({ topic, payload }) => {
+        if (topic === 'topic') {
+          const message = JSON.parse(payload.toString())
+          expect(message).toBe('message')
+          broker.close()
+          done()
+        }
+      }
+    )
   })
 })
