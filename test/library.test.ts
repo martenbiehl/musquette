@@ -155,17 +155,14 @@ describe('topic', () => {
           done()
         })
 
-        connection.next({
-          topic: 'topic',
-          message: 'message'
-        })
-
-        // broker.publish({
-        //   topic: 'topic',
-        //   payload: JSON.stringify('message'),
-        //   qos: 0,
-        //   retain: false
-        // })
+        setTimeout(() => {
+          broker.publish({
+            topic: 'topic',
+            payload: JSON.stringify('message'),
+            qos: 0,
+            retain: true
+          })
+        }, 300)
       },
       noop,
       noop
@@ -258,18 +255,14 @@ describe('wildcards', () => {
           broker.close()
           done()
         })
-
-        connection.next({
-          topic: 'topic/topic',
-          message: 'message'
-        })
-
-        // broker.publish({
-        //   topic: 'topic',
-        //   payload: JSON.stringify('message'),
-        //   qos: 0,
-        //   retain: false
-        // })
+        setTimeout(() => {
+          broker.publish({
+            topic: 'topic/topic',
+            payload: JSON.stringify('message'),
+            qos: 0,
+            retain: false
+          })
+        }, 300)
       },
       noop,
       noop
@@ -290,17 +283,14 @@ describe('wildcards', () => {
           done()
         })
 
-        connection.next({
-          topic: 'topic/topic/topic',
-          message: 'message'
-        })
-
-        // broker.publish({
-        //   topic: 'topic',
-        //   payload: JSON.stringify('message'),
-        //   qos: 0,
-        //   retain: false
-        // })
+        setTimeout(() => {
+          broker.publish({
+            topic: 'topic/topic/topic',
+            payload: JSON.stringify('message'),
+            qos: 0,
+            retain: false
+          })
+        }, 300)
       },
       noop,
       noop
