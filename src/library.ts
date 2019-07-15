@@ -228,9 +228,12 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
 }
 
 const isWildcardTopic = (topic: string) => topic.includes('#') || topic.includes('+')
-export class MQTTTopicSubject<T> extends AnonymousSubject<T> {
+export class MQTTTopicSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
+  source: MQTTSubject<T>
+
   constructor(source: MQTTSubject<T>, private _topic: string) {
     super(source, source)
+    this.source = source
   }
 
   publish(message: T) {
@@ -241,7 +244,7 @@ export class MQTTTopicSubject<T> extends AnonymousSubject<T> {
     observer.next({ topic: this._topic, message })
   }
 
-  _subscribe(subscriber: Subscriber<T>) {
+  _subscribe(subscriber: Subscriber<MQTTMessage<T>>) {
     //FIXME: Actual subscribe should be executed here
     const { source } = this
     if (source) {
