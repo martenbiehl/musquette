@@ -169,6 +169,25 @@ describe('topic', () => {
     )
   })
 
+  it('warn if topic starts with a slash', done => {
+    expect.assertions(1)
+    const [port, broker] = startBroker(
+      () => {
+        let warning = jest.fn()
+        console.warn = warning
+        let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+        let topic = connection.topic('/topic')
+        topic.subscribe()
+        setTimeout(() => {
+          expect(warning).toHaveBeenCalled()
+          done()
+        }, 1000)
+      },
+      noop,
+      noop
+    )
+  })
+
   it('publish data on the topic', done => {
     expect.assertions(1)
     const [port, broker] = startBroker(

@@ -107,6 +107,11 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   }
 
   topic(topic: string): MQTTTopicSubject<T> {
+    if (topic[0] === '/') {
+      console.warn(
+        `Topic ${topic} starts with a slash which creates an empty root topic. This is handled differently between different broker implementations. (This is not OSC!)`
+      )
+    }
     if (this._connection) {
       this._connection.subscribe(topic)
     }
