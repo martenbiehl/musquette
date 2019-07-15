@@ -96,7 +96,6 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   }
 
   private _resetState() {
-    // FIX: resetting connection
     if (this._connection) {
       this._connection.end()
     }
