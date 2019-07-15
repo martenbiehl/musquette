@@ -29,12 +29,12 @@ export interface MQTTSubjectConfig<T> {
    * A serializer used to create messages from passed values before the
    * messages are sent to the server. Defaults to JSON.stringify.
    */
-  serializer?: (value: T) => Buffer
+  serializer: (value: T) => Buffer
   /**
    * A deserializer used for messages arriving on the socket from the
    * server. Defaults to JSON.parse.
    */
-  deserializer?: (message: Buffer) => T
+  deserializer: (message: Buffer) => T
   /**
    * An Observer that watches when open events occur on the underlying connection
    */
@@ -61,15 +61,15 @@ const DEFAULT_MQTT_CONFIG: MQTTSubjectConfig<any> = {
 const WEBSOCKETSUBJECT_INVALID_ERROR_OBJECT =
   'WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }'
 
-export class MQTTSubject<T> extends AnonymousSubject<T> {
+export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   private _config: MQTTSubjectConfig<T>
 
   /** @deprecated This is an internal implementation detail, do not use. */
-  private _output: Subject<T> = new Subject<T>()
+  private _output: Subject<MQTTMessage<T>> = new Subject<MQTTMessage<T>>()
 
   private _connection?: MQTTClient
 
-  constructor(urlOrConfig: string | MQTTSubjectConfig<T>, destination?: Observer<T>) {
+  constructor(urlOrConfig: string | MQTTSubjectConfig<T>, destination?: Observer<MQTTMessage<T>>) {
     super()
     const config = (this._config = { ...DEFAULT_MQTT_CONFIG })
     if (typeof urlOrConfig === 'string') {
@@ -82,16 +82,14 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       }
     }
 
-    this.destination = destination || new ReplaySubject()
+    this.destination = destination || new ReplaySubject<MQTTMessage<T>>()
 
     this._connectBroker()
   }
 
-  lift<R>(operator: Operator<T, R>): MQTTSubject<R> {
+  lift<R>(operator: Operator<T, R>): Observable<R> {
     // TODO: Fix all the <any> here
-    const connection = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any>(
-      this.destination
-    ))
+    const connection = new MQTTSubject<R>(this._config, this.destination)
     connection.operator = operator
     connection.source = this
     return connection
@@ -105,7 +103,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
     if (!this.source) {
       this.destination = new ReplaySubject()
     }
-    this._output = new Subject<T>()
+    this._output = new Subject<MQTTMessage<T>>()
   }
 
   topic(topic: string): MQTTTopicSubject<T> {
@@ -173,7 +171,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       ) as Subscriber<any>
 
       if (queue && queue instanceof ReplaySubject) {
-        ;(<ReplaySubject<T>>queue).subscribe(this.destination)
+        ;(<ReplaySubject<MQTTMessage<T>>>queue).subscribe(this.destination)
       }
     })
 
@@ -195,11 +193,10 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
       }
       observer.complete()
     })
-    connection.on('message', (topic, messageBuffer) => {
+    connection.on('message', (topic: string, message: Buffer) => {
       // TODO: Serialize/deserialize per topic
       try {
         const { deserializer } = this._config
-        let message = messageBuffer.toString()
         observer.next({
           topic,
           message: deserializer(message)
@@ -218,7 +215,7 @@ export class MQTTSubject<T> extends AnonymousSubject<T> {
   }
 
   /** @deprecated This is an internal implementation detail, do not use. */
-  _subscribe(subscriber: Subscriber<T>): Subscription {
+  _subscribe(subscriber: Subscriber<MQTTMessage<T>>): Subscription {
     const { source } = this
     if (source) {
       return source.subscribe(subscriber)
