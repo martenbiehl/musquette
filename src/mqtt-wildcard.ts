@@ -1,5 +1,5 @@
 // adapted from https://github.com/hobbyquaker/mqtt-wildcard
-export default function mqttWildcard(topic, wildcard) {
+export default function mqttWildcard(topic: string, wildcard: string) {
   if (topic === wildcard) {
     return []
   } else if (wildcard === '#') {
