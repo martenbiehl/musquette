@@ -239,6 +239,21 @@ describe('topic', () => {
       }
     )
   })
+
+  it('published messages are not sent to all clients', done =>
+    startBroker(() => {
+      let never = jest.fn()
+      let connection = new MQTTSubject(`mqtt://localhost:${port}`)
+      connection.subscribe(never)
+
+      connection.publish('t', {})
+      connection.next({ topic: 't', message: {} })
+
+      setTimeout(() => {
+        expect(never).not.toHaveBeenCalled()
+        done()
+      }, 1000)
+    }))
 })
 
 describe('wildcards', () => {
