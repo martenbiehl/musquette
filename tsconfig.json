@@ -16,7 +16,6 @@
       "node_modules/@types"
     ],
     "types": ["jest"],
-    "resolveJsonModule": true,
   },
   "include": [
     "src"

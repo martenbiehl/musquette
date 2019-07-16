@@ -42,7 +42,7 @@ export interface MQTTSubjectConfig<T> {
   /**
    * An Observer than watches when close events occur on the underlying connection
    */
-  disconnectObserver?: NextObserver<CloseEvent>
+  disconnectObserver?: NextObserver<CloseEvent | Error>
   /**
    * An Observer that watches when a close is about to occur due to
    * unsubscription.
@@ -57,9 +57,6 @@ const DEFAULT_MQTT_CONFIG: MQTTSubjectConfig<any> = {
   deserializer: (message: Buffer) => JSON.parse(message.toString()),
   serializer: (value: any) => Buffer.from(JSON.stringify(value))
 }
-
-const WEBSOCKETSUBJECT_INVALID_ERROR_OBJECT =
-  'WebSocketSubject.error must be called with an object with an error code, and an optional reason: { code: number, reason: string }'
 
 export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   private _config: MQTTSubjectConfig<T>
@@ -87,9 +84,10 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
     this._connectBroker()
   }
 
-  lift<R>(operator: Operator<T, R>): Observable<R> {
-    // TODO: Fix all the <any> here
-    const connection = new MQTTSubject<R>(this._config, this.destination)
+  lift<R>(operator: Operator<MQTTMessage<T>, R>): Observable<R> {
+    let config: MQTTSubjectConfig<R> = (this._config as unknown) as MQTTSubjectConfig<R>
+    let destination = (this.destination as unknown) as Observer<R>
+    const connection = new MQTTSubject<R>(config, destination)
     connection.operator = operator
     connection.source = this
     return connection
@@ -128,7 +126,7 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
         )
       : connect(url))
 
-    connection.on('connect', e => {
+    connection.on('connect', (e: Event) => {
       const { connectObserver } = this._config
       if (connectObserver) {
         connectObserver.next(e)
@@ -151,7 +149,7 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
           if (connection && connection.connected) {
             const { serializer } = this._config
             if (connection) {
-              connection.publish(topic, serializer(message), { qos, retain }, (error: Error) => {
+              connection.publish(topic, serializer(message), { qos, retain }, (error?: Error) => {
                 if (error && this.destination) this.destination.error(e)
               })
             }
@@ -183,13 +181,12 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
       this._resetState()
       observer.error(e)
     })
-
-    connection.stream.on('error', e => {
+    ;(connection as any).stream.on('error', (e: Error) => {
       this._resetState()
       observer.error(e)
     })
 
-    connection.on('end', e => {
+    connection.on('end', (e: CloseEvent) => {
       this._resetState()
       const { disconnectObserver } = this._config
       if (disconnectObserver) {
@@ -212,6 +209,8 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   }
 
   publish(topic: string, message: T) {
+    if (!this.destination) return
+
     this.destination.next({
       topic,
       message

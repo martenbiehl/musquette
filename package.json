@@ -124,7 +124,9 @@
     "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "^8.0.1",
     "typedoc": "^0.12.0",
-    "typescript": "^3.0.3"
+    "typescript": "^3.0.3",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-replace": "^2.2.0"
   },
   "dependencies": {
     "mqtt": "^2.18.8",

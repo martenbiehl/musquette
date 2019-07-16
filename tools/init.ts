@@ -26,8 +26,8 @@ const modifyFiles = [
   "tools/gh-pages-publish.ts"
 ]
 const renameFiles = [
-  ["src/library.ts", "src/--libraryname--.ts"],
-  ["test/library.test.ts", "test/--libraryname--.test.ts"]
+  ["src/library.ts", "src/rxjs-mqtt.ts"],
+  ["test/library.test.ts", "test/rxjs-mqtt.test.ts"]
 ]
 
 const _promptSchemaLibraryName = {
@@ -131,7 +131,7 @@ function libraryNameSuggestedAccept() {
 /**
  * The library name is suggested by looking at the directory name of the
  * tools parent directory and converting it to kebab-case
- * 
+ *
  * The regex for this looks for any non-word or non-digit character, or
  * an underscore (as it's a word character), and replaces it with a dash.
  * Any leading or trailing dashes are then removed, before the string is
@@ -160,7 +160,7 @@ function libraryNameSuggestedIsDefault() {
 
 /**
  * Calls all of the functions needed to setup the library
- * 
+ *
  * @param libraryName
  */
 function setupLibrary(libraryName: string) {
@@ -202,10 +202,10 @@ function removeItems() {
 
 /**
  * Updates the contents of the template files with the library name or user details
- * 
- * @param libraryName 
- * @param username 
- * @param usermail 
+ *
+ * @param libraryName
+ * @param username
+ * @param usermail
  */
 function modifyContents(libraryName: string, username: string, usermail: string) {
   console.log(colors.underline.white("Modified"))
@@ -214,7 +214,7 @@ function modifyContents(libraryName: string, username: string, usermail: string)
   try {
     const changes = replace.sync({
       files,
-      from: [/--libraryname--/g, /--username--/g, /--usermail--/g],
+      from: [/rxjs-mqtt/g, /--username--/g, /--usermail--/g],
       to: [libraryName, username, usermail]
     })
     console.log(colors.yellow(modifyFiles.join("\n")))
@@ -227,8 +227,8 @@ function modifyContents(libraryName: string, username: string, usermail: string)
 
 /**
  * Renames any template files to the new library name
- * 
- * @param libraryName 
+ *
+ * @param libraryName
  */
 function renameItems(libraryName: string) {
   console.log(colors.underline.white("Renamed"))
@@ -236,7 +236,7 @@ function renameItems(libraryName: string) {
   renameFiles.forEach(function(files) {
     // Files[0] is the current filename
     // Files[1] is the new name
-    let newFilename = files[1].replace(/--libraryname--/g, libraryName)
+    let newFilename = files[1].replace(/rxjs-mqtt/g, libraryName)
     mv(
       path.resolve(__dirname, "..", files[0]),
       path.resolve(__dirname, "..", newFilename)
