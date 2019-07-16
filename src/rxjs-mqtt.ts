@@ -85,11 +85,13 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   }
 
   lift<R>(operator: Operator<MQTTMessage<T>, R>): Observable<R> {
-    let config: MQTTSubjectConfig<R> = (this._config as unknown) as MQTTSubjectConfig<R>
-    let destination = (this.destination as unknown) as Observer<R>
-    const connection = new MQTTSubject<R>(config, destination)
+    const connection = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any>(
+      this.destination
+    ))
+    // @ts-ignore
     connection.operator = operator
     connection.source = this
+    // @ts-ignore
     return connection
   }
 
