@@ -23,7 +23,7 @@ interface MQTTMessage<T> {
 export interface MQTTSubjectConfig<T> {
   /** The url of the MQTT server to connect to */
   url: string
-  /** The protocol to use to connect */
+  /** Options to be sent to the mqtt library */
   options?: MQTTClientOptions
   /**
    * A serializer used to create messages from passed values before the
@@ -44,8 +44,7 @@ export interface MQTTSubjectConfig<T> {
    */
   disconnectObserver?: NextObserver<CloseEvent | Error>
   /**
-   * An Observer that watches when a close is about to occur due to
-   * unsubscription.
+   * An Observer that watches when a close is about to occur
    */
   disconnectingObserver?: NextObserver<void>
 
