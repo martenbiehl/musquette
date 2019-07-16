@@ -1,7 +1,7 @@
 {
   "name": "rxjs-mqtt",
   "version": "0.0.0",
-  "description": "",
+  "description": "Use MQTT with RXJS in node or in the browser with MQTT over WebSocket.",
   "keywords": [],
   "main": "dist/rxjs-mqtt.umd.js",
   "module": "dist/rxjs-mqtt.es5.js",
@@ -9,10 +9,10 @@
   "files": [
     "dist"
   ],
-  "author": "Marten Biehl <martenbiehehl@gmail.com>",
+  "author": "Marten Biehl <martenbiehl@gmail.com>",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git@github.com:ixds/rxjs-mqtt.git"
   },
   "license": "MIT",
   "engines": {
