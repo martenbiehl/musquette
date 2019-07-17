@@ -6,13 +6,13 @@ export default function mqttWildcard(topic: string, wildcard: string) {
     return [topic]
   }
 
-  var res = []
+  let res = []
 
-  var t = String(topic).split('/')
-  var w = String(wildcard).split('/')
+  let t = String(topic).split('/')
+  let w = String(wildcard).split('/')
 
-  var i = 0
-  for (var lt = t.length; i < lt; i++) {
+  let i = 0
+  for (let lt = t.length; i < lt; i++) {
     if (w[i] === '+') {
       res.push(t[i])
     } else if (w[i] === '#') {
