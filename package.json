@@ -124,11 +124,11 @@
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
     "tslint-config-standard": "^8.0.1",
+    "tslint-jest": "^1.0.5",
     "typedoc": "^0.12.0",
     "typescript": "^3.0.3"
   },
   "dependencies": {
-    "mqtt": "^2.18.8",
-    "tslint-jest": "^1.0.5"
+    "mqtt": "^2.18.8"
   }
 }
