@@ -84,9 +84,10 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   }
 
   lift<R>(operator: Operator<MQTTMessage<T>, R>): Observable<R> {
-    const connection = new MQTTSubject<R>(this._config as MQTTSubjectConfig<any>, <any>(
-      this.destination
-    ))
+    const connection = new MQTTSubject<R>(
+      this._config as MQTTSubjectConfig<any>,
+      this.destination as any
+    )
     // @ts-ignore
     connection.operator = operator
     connection.source = this
@@ -174,7 +175,7 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
       ) as Subscriber<any>
 
       if (queue && queue instanceof ReplaySubject) {
-        ;(<ReplaySubject<MQTTMessage<T>>>queue).subscribe(this.destination)
+        ;(queue as ReplaySubject<MQTTMessage<T>>).subscribe(this.destination)
       }
     })
 
@@ -249,11 +250,11 @@ export class MQTTTopicSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
   }
 
   _subscribe(subscriber: Subscriber<MQTTMessage<T>>) {
-    //FIXME: Actual subscribe should be executed here
+    // FIXME: Actual subscribe should be executed here
     const { source } = this
     if (source) {
       return this.source
-        .pipe(filter(packet => typeof mqttWildcard(packet.topic, this._topic) !== 'undefined'))
+        .pipe(filter(packet => !mqttWildcard(packet.topic, this._topic)))
         .subscribe(subscriber)
     } else {
       return Subscription.EMPTY

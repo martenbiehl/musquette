@@ -3,5 +3,10 @@
     "tslint-config-standard",
     "tslint-config-prettier",
     "tslint-jest"
-  ]
+  ],
+  "rules": {
+    "deprecation": {
+      "severity": "warning"
+    }
+  }
 }
