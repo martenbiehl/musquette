@@ -9,7 +9,7 @@ import nodeBuiltins from 'rollup-plugin-node-builtins'
 
 const pkg = require('./package.json')
 
-const libraryName = pkg.name
+const libraryName = 'rxjs-mqtt'
 
 export default {
   input: `src/${libraryName}.ts`,
