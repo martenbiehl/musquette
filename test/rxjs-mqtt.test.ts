@@ -94,35 +94,48 @@ describe('Connect', async () => {
 
 describe('publishing', () => {
   it('publish message as MQTTMessage', done => {
-    const [port, broker] = startBroker(noop, noop, packet => {
-      if (packet.topic !== 'topic') return
-      let message = JSON.parse(packet.payload.toString())
-      expect(message).toEqual('message')
-      done()
-    })
     expect.assertions(1)
-
-    let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
-    connection.subscribe()
-    connection.next({ topic: 'topic', message: 'message' })
+    const [port, broker] = startBroker(
+      () => {
+        let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
+        connection.subscribe()
+        connection.next({ topic: 'topic', message: 'message' })
+      },
+      noop,
+      packet => {
+        if (packet.topic !== 'topic') return
+        let message = JSON.parse(packet.payload.toString())
+        expect(message).toEqual('message')
+        done()
+      }
+    )
   })
 
   it('publish message as MQTTMessage without subscribing first', done => {
-    const [port, broker] = startBroker(noop, noop, packet => {
-      if (packet.topic !== 'topic') return
-      let message = JSON.parse(packet.payload.toString())
-      expect(message).toEqual('message')
-      done()
-    })
     expect.assertions(1)
-
-    let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
-    connection.next({ topic: 'topic', message: 'message' })
+    const [port, broker] = startBroker(
+      () => {
+        let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
+        connection.next({ topic: 'topic', message: 'message' })
+      },
+      noop,
+      packet => {
+        if (packet.topic !== 'topic') return
+        let message = JSON.parse(packet.payload.toString())
+        expect(message).toEqual('message')
+        done()
+      }
+    )
   })
 
   it('publish message with arguments syntax', done => {
+    expect.assertions(1)
     const [port, broker] = startBroker(
-      noop,
+      () => {
+        let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
+        connection.subscribe()
+        connection.publish('topic', 'message')
+      },
       noop,
       packet => {
         if (packet.topic !== 'topic') return
@@ -132,11 +145,6 @@ describe('publishing', () => {
       },
       done
     )
-    expect.assertions(1)
-
-    let connection = new MQTTSubject({ url: `mqtt://localhost:${port}` })
-    connection.subscribe()
-    connection.publish('topic', 'message')
   })
 })
 
