@@ -251,10 +251,11 @@ export class MQTTTopicSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
 
   _subscribe(subscriber: Subscriber<MQTTMessage<T>>) {
     // FIXME: Actual subscribe should be executed here
+
     const { source } = this
     if (source) {
       return this.source
-        .pipe(filter(packet => !mqttWildcard(packet.topic, this._topic)))
+        .pipe(filter(packet => !!mqttWildcard(packet.topic, this._topic)))
         .subscribe(subscriber)
     } else {
       return Subscription.EMPTY
