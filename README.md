@@ -1,5 +1,7 @@
 # RXJS-MQTT
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/ixds/rxjs-mqtt.svg)](https://greenkeeper.io/)
+
 Use MQTT with RXJS in node or in the browser with MQTT over WebSocket.
 
 The API is similar to the rxjs internal WebSocket implementation for consistency but replaces the multiplex operator with topics.
