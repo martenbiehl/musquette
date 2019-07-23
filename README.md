@@ -1,6 +1,8 @@
 # RXJS-MQTT
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/ixds/rxjs-mqtt.svg)](https://greenkeeper.io/)
+[![Coverage Status](https://coveralls.io/repos/github/ixds/rxjs-mqtt/badge.svg?branch=master)](https://coveralls.io/github/ixds/rxjs-mqtt?branch=master)
+[![Build Status](https://travis-ci.org/ixds/rxjs-mqtt.svg?branch=master)](https://travis-ci.org/ixds/rxjs-mqtt)
 
 Use MQTT with RXJS in node or in the browser with MQTT over WebSocket.
 
