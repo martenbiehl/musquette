@@ -1,8 +1,8 @@
-# RXJS-MQTT
+# MusQueTTe
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/ixds/rxjs-mqtt.svg)](https://greenkeeper.io/)
-[![Coverage Status](https://coveralls.io/repos/github/ixds/rxjs-mqtt/badge.svg?branch=master)](https://coveralls.io/github/ixds/rxjs-mqtt?branch=master)
-[![Build Status](https://travis-ci.org/ixds/rxjs-mqtt.svg?branch=master)](https://travis-ci.org/ixds/rxjs-mqtt)
+[![Greenkeeper badge](https://badges.greenkeeper.io/ixds/musquette.svg)](https://greenkeeper.io/)
+[![Coverage Status](https://coveralls.io/repos/github/ixds/musquette/badge.svg?branch=master)](https://coveralls.io/github/ixds/musquette?branch=master)
+[![Build Status](https://travis-ci.org/ixds/musquette.svg?branch=master)](https://travis-ci.org/ixds/musquette)
 
 Use MQTT with RXJS in node or in the browser with MQTT over WebSocket.
 
@@ -11,17 +11,17 @@ The API is similar to the rxjs internal WebSocket implementation for consistency
 ## Installation
 
 ```bash
-yarn add rxjs-mqtt
+yarn add musquette
 # or
-npm install rxjs-mqtt
+npm install musquette
 ```
 
 Import via
 
 ```javascript
-import { MQTTSubject } from 'rxjs-mqtt'
+import { MQTTSubject } from 'musquette'
 // or
-import { MQTTSubject } from 'rxjs-mqtt/dist/lib/rxjs-mqtt'
+import { MQTTSubject } from 'musquette/dist/lib/musquette'
 ```
 
 
@@ -32,7 +32,7 @@ import { MQTTSubject } from 'rxjs-mqtt/dist/lib/rxjs-mqtt'
 It is assumed that the payload is JSON parseable string.
 
 ```javascript
-import { MQTTSubject } from 'rxjs-mqtt'
+import { MQTTSubject } from 'musquette'
 
 let mqtt = new MQTTSubject(`ws://localhost:9001`)
 let topic = mqtt.topic(`test/topic`)
@@ -56,7 +56,7 @@ topic.publish({
 ### Send a payload without subscribing to a topic
 
 ```javascript
-import { MQTTSubject } from 'rxjs-mqtt'
+import { MQTTSubject } from 'musquette'
 
 let mqtt = new MQTTSubject(`ws://localhost:9001`)
 
@@ -85,7 +85,7 @@ This is equivalent to the first method but does not subscribe to the topic
 
 import { Subject, Observable, merge } from 'rxjs'
 import { mapTo } from 'rxjs/operators'
-import { MQTTSubject } from 'rxjs-mqtt/dist/lib/rxjs-mqtt.js'
+import { MQTTSubject } from 'musquette/dist/lib/musquette.js'
 
 let connected$ = new Subject()
 let disconnecting$ = new Subject()

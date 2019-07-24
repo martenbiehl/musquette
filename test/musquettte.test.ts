@@ -1,4 +1,4 @@
-import { MQTTSubject } from '../src/rxjs-mqtt'
+import { MQTTSubject } from '../src/musquette'
 import { Subject } from 'rxjs'
 
 const mosca = require('mosca')
