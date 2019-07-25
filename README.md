@@ -4,9 +4,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/ixds/musquette/badge.svg?branch=master)](https://coveralls.io/github/ixds/musquette?branch=master)
 [![Build Status](https://travis-ci.org/ixds/musquette.svg?branch=master)](https://travis-ci.org/ixds/musquette)
 
-Use MQTT with RXJS in node or in the browser with MQTT over WebSocket.
+Use MQTT with RXJS in node or in the browser with MQTT over WebSocket. [Docs](https://ixds.github.io/musquette/)
 
-The API is similar to the rxjs internal WebSocket implementation for consistency but replaces the multiplex operator with topics.
+The API is similar to the rxjs internal WebSocket implementation for consistency but replaces the multiplex operator with topics.]
 
 ## Installation
 
