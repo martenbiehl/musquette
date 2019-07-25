@@ -10,7 +10,11 @@ import {
 } from 'rxjs'
 import { filter } from 'rxjs/operators'
 
-import { MqttClient as MQTTClient, IClientOptions as MQTTClientOptions, connect } from 'mqtt'
+import {
+  MqttClient as MQTTClient,
+  IClientOptions as MQTTClientOptions,
+  connect as connectBroker
+} from 'mqtt'
 import mqttWildcard from './mqtt-wildcard'
 
 interface MQTTMessage<T> {
@@ -121,12 +125,7 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
     const { url, options } = this._config
     const observer = this._output
 
-    let connection = (this._connection = options
-      ? connect(
-          url,
-          options
-        )
-      : connect(url))
+    let connection = (this._connection = options ? connectBroker(url, options) : connectBroker(url))
 
     connection.on('connect', (e: Event) => {
       const { connectObserver } = this._config
@@ -262,3 +261,6 @@ export class MQTTTopicSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
     }
   }
 }
+
+export const connect = <T>(urlOrConfig: string | MQTTSubjectConfig<T>) =>
+  new MQTTSubject(urlOrConfig)

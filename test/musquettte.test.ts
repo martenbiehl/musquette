@@ -1,4 +1,4 @@
-import { MQTTSubject } from '../src/musquette'
+import { MQTTSubject, connect } from '../src/musquette'
 import { Subject } from 'rxjs'
 
 const mosca = require('mosca')
@@ -89,6 +89,18 @@ describe('Connect', async () => {
     let connection = new MQTTSubject({ url: `mqtt://localhost:${port}`, disconnectObserver })
     connection.subscribe()
     connection.complete()
+  })
+
+  it('connect should return subscription to MQTTSubject with the passed configuration', done => {
+    expect.assertions(1)
+    let connectObserver = new Subject()
+    connectObserver.subscribe({
+      next: event => {
+        expect(event).toHaveProperty('cmd', 'connack')
+        done()
+      }
+    })
+    connect({ url: `mqtt://localhost:${port}`, connectObserver }).subscribe()
   })
 })
 
