@@ -125,7 +125,7 @@
     "ts-node": "^8.3.0",
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.15.0",
-    "tslint-config-standard": "^8.0.1",
+    "tslint-config-standard": "^9.0.0",
     "tslint-jest": "^1.0.5",
     "typedoc": "^0.15.0",
     "typescript": "^3.0.3"
