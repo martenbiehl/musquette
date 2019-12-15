@@ -108,7 +108,7 @@
     "mqtt-connection": "^4.0.0",
     "prettier": "^1.14.3",
     "prompt": "^1.0.0",
-    "replace-in-file": "^4.1.1",
+    "replace-in-file": "^5.0.2",
     "rimraf": "^3.0.0",
     "rollup": "^1.17.0",
     "rollup-plugin-commonjs": "^10.0.1",
