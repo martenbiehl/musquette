@@ -1,7 +1,7 @@
 # MusQueTTe
 
-[![Coverage Status](https://coveralls.io/repos/github/martenbiehl/musquette/badge.svg?branch=master)](https://coveralls.io/github/ixds/musquette?branch=master)
-[![Build Status](https://travis-ci.org/martenbiehl/musquette.svg?branch=master)](https://travis-ci.org/ixds/musquette)
+[![Coverage Status](https://coveralls.io/repos/github/martenbiehl/musquette/badge.svg?branch=master)](https://coveralls.io/github/martenbiehl/musquette?branch=master)
+[![Build Status](https://travis-ci.org/martenbiehl/musquette.svg?branch=master)](https://travis-ci.org/martenbiehl/musquette)
 
 Use MQTT with RXJS in node or in the browser with MQTT over WebSocket. [Docs](https://martenbiehl.github.io/musquette/)
 
@@ -22,7 +22,6 @@ import { MQTTSubject } from 'musquette'
 // or
 import { MQTTSubject } from 'musquette/dist/lib/musquette'
 ```
-
 
 ## Usage
 
@@ -81,7 +80,6 @@ This is equivalent to the first method but does not subscribe to the topic
 ### Options
 
 ```javascript
-
 import { Subject, Observable, merge } from 'rxjs'
 import { mapTo } from 'rxjs/operators'
 import { MQTTSubject } from 'musquette/dist/lib/musquette.js'
@@ -90,11 +88,15 @@ let connected$ = new Subject()
 let disconnecting$ = new Subject()
 let disconnected$ = new Subject()
 
-merge(connected$, disconnecting$.pipe(mapTo('disconnecting')), disconnected$.pipe(mapTo('disconnected'))).subscribe(console.log)
+merge(
+  connected$,
+  disconnecting$.pipe(mapTo('disconnecting')),
+  disconnected$.pipe(mapTo('disconnected'))
+).subscribe(console.log)
 
 let mqtt = new MQTTSubject({
   url: `ws://localhost:9001`,
-  
+
   // mqtt.js options
   //
   options: {
@@ -110,12 +112,12 @@ let mqtt = new MQTTSubject({
   // (T) => Buffer
   //
   serializer: value => Buffer.from(JSON.stringify(value)),
-  
+
   // function that unpacks the payload
   // (Buffer) => T
   //
   deserializer: message => JSON.parse(message.toString()),
-  
+
   // Observer that is called when connection is established
   //
   connectObserver: connected$,
@@ -132,24 +134,21 @@ let mqtt = new MQTTSubject({
 mqtt.subscribe(console.log)
 
 setTimeout(() => {
-
   // disconnect
   //
   mqtt.complete()
-
 }, 5000)
-
 ```
 
 ### NPM scripts
 
- - `npm t`: Run test suite
- - `npm start`: Run `npm run build` in watch mode
- - `npm run test:watch`: Run test suite in [interactive watch mode](http://facebook.github.io/jest/docs/cli.html#watch)
- - `npm run test:prod`: Run linting and generate coverage
- - `npm run build`: Generate bundles and typings, create docs
- - `npm run lint`: Lints code
- - `npm run commit`: Commit using conventional commit style ([husky](https://github.com/typicode/husky) will tell you to use it if you haven't :wink:)
+- `npm t`: Run test suite
+- `npm start`: Run `npm run build` in watch mode
+- `npm run test:watch`: Run test suite in [interactive watch mode](http://facebook.github.io/jest/docs/cli.html#watch)
+- `npm run test:prod`: Run linting and generate coverage
+- `npm run build`: Generate bundles and typings, create docs
+- `npm run lint`: Lints code
+- `npm run commit`: Commit using conventional commit style ([husky](https://github.com/typicode/husky) will tell you to use it if you haven't :wink:)
 
 ## Credits
 
@@ -161,7 +160,6 @@ Based on [typescript library starter](https://www.google.com/search?client=safar
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore -->
-
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/kentcdodds/all-contributors) specification. Contributions of any kind are welcome!
