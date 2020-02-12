@@ -1,10 +1,9 @@
 # MusQueTTe
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/ixds/musquette.svg)](https://greenkeeper.io/)
-[![Coverage Status](https://coveralls.io/repos/github/ixds/musquette/badge.svg?branch=master)](https://coveralls.io/github/ixds/musquette?branch=master)
-[![Build Status](https://travis-ci.org/ixds/musquette.svg?branch=master)](https://travis-ci.org/ixds/musquette)
+[![Coverage Status](https://coveralls.io/repos/github/martenbiehl/musquette/badge.svg?branch=master)](https://coveralls.io/github/ixds/musquette?branch=master)
+[![Build Status](https://travis-ci.org/martenbiehl/musquette.svg?branch=master)](https://travis-ci.org/ixds/musquette)
 
-Use MQTT with RXJS in node or in the browser with MQTT over WebSocket. [Docs](https://ixds.github.io/musquette/)
+Use MQTT with RXJS in node or in the browser with MQTT over WebSocket. [Docs](https://martenbiehl.github.io/musquette/)
 
 The API is similar to the rxjs internal WebSocket implementation for consistency but replaces the multiplex operator with topics.]
 
