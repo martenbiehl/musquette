@@ -1,5 +1,5 @@
 {
-  "name": "@ixds/musquette",
+  "name": "musquette",
   "version": "0.0.0-development",
   "description": "Use MQTT with RXJS in node or in the browser with MQTT over WebSocket.",
   "keywords": [],
