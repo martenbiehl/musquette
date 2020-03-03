@@ -30,7 +30,7 @@ function startBroker(
   return [port, server]
 }
 
-describe('Connect', async () => {
+describe('Connect', () => {
   let port, broker
 
   beforeEach(done => {
