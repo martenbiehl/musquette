@@ -33,12 +33,12 @@ export interface MQTTSubjectConfig<T> {
    * A serializer used to create messages from passed values before the
    * messages are sent to the server. Defaults to JSON.stringify.
    */
-  serializer: (value: T) => Buffer
+  serializer?: (value: T) => Buffer
   /**
    * A deserializer used for messages arriving on the socket from the
    * server. Defaults to JSON.parse.
    */
-  deserializer: (message: Buffer) => T
+  deserializer?: (message: Buffer) => T
   /**
    * An Observer that watches when open events occur on the underlying connection
    */
@@ -62,7 +62,7 @@ const DEFAULT_MQTT_CONFIG: MQTTSubjectConfig<any> = {
 }
 
 export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
-  private _config: MQTTSubjectConfig<T>
+  private _config: MQTTSubjectConfig<T> = { ...DEFAULT_MQTT_CONFIG }
 
   /** @deprecated This is an internal implementation detail, do not use. */
   private _output: Subject<MQTTMessage<T>> = new Subject<MQTTMessage<T>>()
@@ -71,13 +71,12 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
 
   constructor(urlOrConfig: string | MQTTSubjectConfig<T>, destination?: Observer<MQTTMessage<T>>) {
     super()
-    const config = (this._config = { ...DEFAULT_MQTT_CONFIG })
     if (typeof urlOrConfig === 'string') {
-      config.url = urlOrConfig
+      this._config.url = urlOrConfig
     } else {
       for (let key in urlOrConfig) {
         if (urlOrConfig.hasOwnProperty(key)) {
-          config[key] = urlOrConfig[key]
+          this._config[key] = urlOrConfig[key]
         }
       }
     }
@@ -148,7 +147,8 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
           const { topic, message, qos = 0, retain } = command
 
           if (connection && connection.connected) {
-            const { serializer } = this._config
+            let { serializer } = this._config
+            if (!serializer) throw new Error('Serializer is undefined')
             if (connection) {
               connection.publish(topic, serializer(message), { qos, retain }, (error?: Error) => {
                 if (error && this.destination) this.destination.error(e)
@@ -199,6 +199,7 @@ export class MQTTSubject<T> extends AnonymousSubject<MQTTMessage<T>> {
       // TODO: Serialize/deserialize per topic
       try {
         const { deserializer } = this._config
+        if (!deserializer) throw new Error('Deserializer is undefined')
         observer.next({
           topic,
           message: deserializer(message)
