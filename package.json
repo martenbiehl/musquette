@@ -106,7 +106,7 @@
     "lodash.camelcase": "^4.3.0",
     "mosca": "^2.8.3",
     "mqtt-connection": "^4.0.0",
-    "prettier": "^2.0.0",
+    "prettier": "^2.0.4",
     "prompt": "^1.0.0",
     "replace-in-file": "^5.0.2",
     "rimraf": "^3.0.0",
