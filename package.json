@@ -131,6 +131,7 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "minimist": "^0.2.1",
     "mqtt": "^3.0.0"
   }
 }
