@@ -1,7 +1,7 @@
 {
-    "name": "options-example",
+    "name": "options-ts",
     "version": "1.0.0",
-    "description": "An example with all options",
+    "description": "Example using MusQueTTe with Typescript",
     "license": "MIT",
     "private": true,
     "scripts": {
@@ -18,5 +18,9 @@
         "querystring-es3": "^0.2.1",
         "url": "^0.11.0",
         "util": "^0.12.3"
+    },
+    "dependencies": {
+        "musquette": "../../dist/lib/",
+        "rxjs": "^7.8.0"
     }
 }

@@ -1,6 +1,6 @@
 import { Subject, Observable, merge } from 'rxjs'
 import { mapTo } from 'rxjs/operators'
-import { MQTTSubject } from '../../dist/lib/musquette.js'
+import { MQTTSubject } from 'musquette'
 
 let connected$ = new Subject()
 let disconnecting$ = new Subject()
